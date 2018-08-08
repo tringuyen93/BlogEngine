@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BlogEngine.Utility\BlogEngine.Utility.csproj" />
-    <ProjectReference Include="..\Service\BlogEngine.Service.csproj" />
   </ItemGroup>
 
 </Project>
