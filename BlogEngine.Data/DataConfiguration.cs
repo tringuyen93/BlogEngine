@@ -23,7 +23,7 @@ namespace BlogEngine.Data
 
             services.AddScoped<IDbContext, BlogEngineContext>();
             services.AddScoped<IUnitOfWork<Guid>, UnitOfWork<Guid>>();
-            services.AddSingleton<IBlogRepository, BlogRepository>();
+            services.AddScoped<IBlogRepository, BlogRepository>();
         }
     }
 }

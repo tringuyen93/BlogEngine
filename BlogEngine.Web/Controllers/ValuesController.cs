@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BlogEngine.Service.Dtos;
+using BlogEngine.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogEngine.Web.Controllers
@@ -10,11 +12,17 @@ namespace BlogEngine.Web.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
+        private readonly IBlogService _blogService;
+        public ValuesController(IBlogService blogService)
+        {
+            _blogService = blogService;
+        }
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public ActionResult<IList<BlogDTO>> Get()
         {
-            return new string[] { "value1", "value2" };
+            var tmp = _blogService.GetAll();
+            return new JsonResult(tmp);
         }
 
         // GET api/values/5
