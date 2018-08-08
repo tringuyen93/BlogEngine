@@ -13,7 +13,7 @@ namespace BlogEngine.Data
 {
     public static class DataConfiguration
     {
-        public static void ConfigureService(IServiceCollection services, IConfigurationRoot configuration)
+        public static void ConfigureService(IServiceCollection services, IConfiguration configuration)
         {
             string connectionString = configuration.GetConnectionString("DefaultConnection");
 

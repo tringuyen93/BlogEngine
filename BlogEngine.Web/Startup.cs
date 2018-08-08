@@ -16,12 +16,12 @@ namespace BlogEngine.Web
 {
     public class Startup
     {
-        public Startup(IConfigurationRoot configuration)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)

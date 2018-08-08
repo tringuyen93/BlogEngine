@@ -6,7 +6,7 @@ namespace BlogEngine.Utility
 {
     public class SeviceConfiguration
     {
-        public static void ConfigureService(IServiceCollection services, IConfigurationRoot configuration)
+        public static void ConfigureService(IServiceCollection services, IConfiguration configuration)
         {
             DataConfiguration.ConfigureService(services, configuration);
         }
