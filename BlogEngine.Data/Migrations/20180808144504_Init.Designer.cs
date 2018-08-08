@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlogEngine.Data.Migrations
 {
     [DbContext(typeof(BlogEngineContext))]
-    [Migration("20180808141300_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20180808144504_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -24,7 +24,8 @@ namespace BlogEngine.Data.Migrations
             modelBuilder.Entity("BlogEngine.Data.Entities.Blog", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("NEWID()");
 
                     b.Property<bool>("CanUserDelete");
 

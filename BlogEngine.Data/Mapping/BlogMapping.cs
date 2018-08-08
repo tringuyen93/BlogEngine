@@ -10,6 +10,7 @@ namespace BlogEngine.Data.Mapping
         {
             builder.ToTable("Blog");
             builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).HasDefaultValueSql("NEWID()");
         }
     }
 }

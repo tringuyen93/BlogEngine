@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace BlogEngine.Data.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class Init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,7 +11,7 @@ namespace BlogEngine.Data.Migrations
                 name: "Blog",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(nullable: false),
+                    Id = table.Column<Guid>(nullable: false, defaultValueSql: "NEWID()"),
                     IsChecked = table.Column<bool>(nullable: false),
                     Name = table.Column<string>(nullable: true),
                     IsPrimary = table.Column<bool>(nullable: false),

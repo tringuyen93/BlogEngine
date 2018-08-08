@@ -22,7 +22,8 @@ namespace BlogEngine.Data.Migrations
             modelBuilder.Entity("BlogEngine.Data.Entities.Blog", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("NEWID()");
 
                     b.Property<bool>("CanUserDelete");
 
