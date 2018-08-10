@@ -1,14 +1,15 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using BlogEngine.Data.Entities;
 using BlogEngine.Data.Interfaces;
 using BlogEngine.Data.Mapping;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace BlogEngine.Data
 {
-    public class BlogEngineContext : DbContext, IDbContext
+    public class BlogEngineContext : IdentityDbContext<User, Role, string>, IDbContext
     {
+        public string CurrentUserId { get; set; }
         public BlogEngineContext(DbContextOptions options) : base(options)
         {
 
@@ -27,6 +28,13 @@ namespace BlogEngine.Data
         {
             base.OnModelCreating(builder);
             builder.ApplyConfiguration(new BlogMapping());
+            builder.ApplyConfiguration(new UserMapping());
+            builder.ApplyConfiguration(new RoleMapping());
+            builder.ApplyConfiguration(new RoleClaimsMapping());
+            builder.ApplyConfiguration(new UserClaimMapping());
+            builder.ApplyConfiguration(new UserLoginMapping());
+            builder.ApplyConfiguration(new UserRoleMapping());
+            builder.ApplyConfiguration(new UserTokenMapping());
         }
     }
 
