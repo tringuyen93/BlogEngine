@@ -1,0 +1,117 @@
+﻿using AutoMapper;
+using BlogEngine.Data.Entities;
+using BlogEngine.Service.Interfaces;
+using BlogEngine.WebApi.ViewModel;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace BlogEngine.WebApi.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AccountController : Controller
+    {
+        private readonly IAccountService _accountService;
+        private readonly IMapper _mapper;
+        private const string GetUserByIdActionName = "GetUserById";
+        private const string GetRoleByIdActionName = "GetRoleById";
+        public AccountController(IMapper mapper, IAccountService accountService)
+        {
+            _accountService = accountService;
+            _mapper = mapper;
+        }
+        [HttpGet]
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        [HttpPost("roles")]
+        [ProducesResponseType(201, Type = typeof(RoleViewModel))]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> CreateRole([FromBody] RoleViewModel role)
+        {
+            if (ModelState.IsValid)
+            {
+                if (role == null)
+                    return BadRequest($"{nameof(role)} cannot be null");
+
+                role.Id = Guid.NewGuid().ToString();
+                foreach(var s in role.Permissions)
+                {
+                    s.RoleId = role.Id;
+                }
+                var appRole = _mapper.Map<Role>(role);
+
+                var result = await _accountService.CreateRoleAsync(appRole, role.Permissions?.Select(p => p.Value).ToArray());
+                if (result.Item1)
+                {
+                    return Ok();
+                }
+
+                AddErrors(result.Item2);
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        [HttpPost("users")]
+        [ProducesResponseType(201, Type = typeof(UserViewModel))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
+        public async Task<IActionResult> CreateUser([FromBody] UserEditViewModel user)
+        {
+            if (ModelState.IsValid)
+            {
+                if (user == null)
+                    return BadRequest($"{nameof(user)} cannot be null");
+
+
+                User appUser = _mapper.Map<User>(user);
+                var result = await _accountService.CreateUserAsync(appUser, user.Roles, user.NewPassword);
+                if (result.Item1)
+                {
+                    return Ok();
+                }
+
+                AddErrors(result.Item2);
+            }
+
+            return BadRequest(ModelState);
+        }
+        #region Private
+        private async Task<RoleViewModel> GetRoleViewModelHelper(string roleName)
+        {
+            var role = await _accountService.GetRoleLoadRelatedAsync(roleName);
+            if (role != null)
+                return _mapper.Map<RoleViewModel>(role);
+
+
+            return null;
+        }
+
+        private async Task<UserViewModel> GetUserViewModelHelper(string userId)
+        {
+            var userAndRoles = await _accountService.GetUserAndRolesAsync(userId);
+            if (userAndRoles == null)
+                return null;
+
+            var userVM = _mapper.Map<UserViewModel>(userAndRoles.Item1);
+            userVM.Roles = userAndRoles.Item2;
+
+            return userVM;
+        }
+
+        private void AddErrors(IEnumerable<string> errors)
+        {
+            foreach (var error in errors)
+            {
+                ModelState.AddModelError(string.Empty, error);
+            }
+        }
+        #endregion
+    }
+}
