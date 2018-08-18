@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using BlogEngine.Service.Dtos;
 using BlogEngine.Service.Interfaces;
+using BlogEngine.WebApi.Helper;
+using BlogEngine.WebApi.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogEngine.Web.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
+    //[ApiController]
     public class ValuesController : ControllerBase
     {
         private readonly IBlogService _blogService;
@@ -34,8 +37,9 @@ namespace BlogEngine.Web.Controllers
 
         // POST api/values
         [HttpPost]
-        public void Post([FromBody] string value)
+        public ActionResult<string> Post([FromBody] BlogViewModel view)
         {
+            return "";
         }
 
         // PUT api/values/5

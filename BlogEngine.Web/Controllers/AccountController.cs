@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BlogEngine.Data.Entities;
 using BlogEngine.Service.Interfaces;
+using BlogEngine.WebApi.Helper;
 using BlogEngine.WebApi.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -11,8 +12,7 @@ using System.Threading.Tasks;
 namespace BlogEngine.WebApi.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class AccountController : Controller
+    public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
         private readonly IMapper _mapper;
@@ -24,9 +24,9 @@ namespace BlogEngine.WebApi.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Get()
         {
-            return View();
+            return new JsonResult(null);
         }
 
         [HttpPost("roles")]
