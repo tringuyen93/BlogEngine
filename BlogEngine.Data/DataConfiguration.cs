@@ -28,37 +28,11 @@ namespace BlogEngine.Data
             services.AddIdentity<User, Role>()
                 .AddEntityFrameworkStores<BlogEngineContext>()
                 .AddDefaultTokenProviders();
-            services.Configure<IdentityOptions>(options =>
-            {
-                options.User.RequireUniqueEmail = true;
-                options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
-                options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
-                options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
-            });
-
             services.AddOpenIddict()
                 .AddCore(options =>
                 {
                     options.UseEntityFrameworkCore().UseDbContext<BlogEngineContext>();
-                })
-                .AddServer(options =>
-                {
-                    options.UseMvc();
-                    options.EnableTokenEndpoint("/connect/token");
-                    options.AllowPasswordFlow();
-                    options.AllowRefreshTokenFlow();
-                    options.AcceptAnonymousClients();
-                    options.DisableHttpsRequirement(); 
-                    options.RegisterScopes(
-                        OpenIdConnectConstants.Scopes.OpenId,
-                        OpenIdConnectConstants.Scopes.Email,
-                        OpenIdConnectConstants.Scopes.Phone,
-                        OpenIdConnectConstants.Scopes.Profile,
-                        OpenIdConnectConstants.Scopes.OfflineAccess,
-                        OpenIddictConstants.Scopes.Roles);
-                })
-                .AddValidation();
-
+                });
             services.AddScoped<IDbContext, BlogEngineContext>();
             services.AddScoped<IUnitOfWork<Guid>, UnitOfWork<Guid>>();
             services.AddScoped<IBlogRepository, BlogRepository>();

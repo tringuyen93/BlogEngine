@@ -1,26 +1,29 @@
 ﻿using AutoMapper;
 using BlogEngine.Data.Entities;
 using BlogEngine.Service.Interfaces;
-using BlogEngine.WebApi.Helper;
 using BlogEngine.WebApi.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BlogEngine.Utility.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using OpenIddict.Validation;
 
 namespace BlogEngine.WebApi.Controllers
 {
+    //[Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
         private readonly IMapper _mapper;
-        private const string GetUserByIdActionName = "GetUserById";
-        private const string GetRoleByIdActionName = "GetRoleById";
-        public AccountController(IMapper mapper, IAccountService accountService)
+        private readonly IAuthorizationService _authorizationService;
+        public AccountController(IMapper mapper, IAccountService accountService, IAuthorizationService authorizationService)
         {
             _accountService = accountService;
+            _authorizationService = authorizationService;
             _mapper = mapper;
         }
         [HttpGet]
@@ -59,11 +62,17 @@ namespace BlogEngine.WebApi.Controllers
         }
 
         [HttpPost("users")]
+        //[Authorize(Policies.ManageAllUsersPolicy)]
         [ProducesResponseType(201, Type = typeof(UserViewModel))]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
         public async Task<IActionResult> CreateUser([FromBody] UserEditViewModel user)
         {
+            if (!(await _authorizationService.AuthorizeAsync(this.User, Tuple.Create(user.Roles, new string[] { }),
+                Policies.AssignAllowedRolesPolicy)).Succeeded)
+            {
+                return new ChallengeResult();
+            }
             if (ModelState.IsValid)
             {
                 if (user == null)

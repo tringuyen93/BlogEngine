@@ -19,6 +19,8 @@ namespace BlogEngine.Data.Entities
                 return friendlyName;
             }
         }
+        public string Birthday { get; set; }
+        public string PhotoUrl { get; set; }
         public string JobTitle { get; set; }
         public string FullName { get; set; }
         public string Configuration { get; set; }

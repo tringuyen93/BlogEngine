@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using BlogEngine.Data;
 using BlogEngine.Data.Entities;
 using BlogEngine.Service.Interfaces;
 using BlogEngine.Utility;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using OpenIddict.Abstractions;
+using OpenIddict.Server;
 
 namespace BlogEngine.Service.Services
 {
@@ -19,13 +24,17 @@ namespace BlogEngine.Service.Services
         private readonly BlogEngineContext _context;
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<Role> _roleManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly IOptions<IdentityOptions> _identityOptions;
 
-        public AccountService(UserManager<User> user, RoleManager<Role> role, BlogEngineContext context, IHttpContextAccessor httpAccessor)
+        public AccountService(UserManager<User> user, RoleManager<Role> role, SignInManager<User> signInManager, IOptions<IdentityOptions> identityOptions, BlogEngineContext context, IHttpContextAccessor httpAccessor)
         {
             _context = context;
             _context.CurrentUserId = httpAccessor.HttpContext?.User.FindFirst(OpenIdConnectConstants.Claims.Subject)?.Value?.Trim();
             _userManager = user;
             _roleManager = role;
+            _signInManager = signInManager;
+            _identityOptions = identityOptions;
         }
         public async Task<User> GetUserByIdAsync(string userId)
         {
@@ -47,6 +56,10 @@ namespace BlogEngine.Service.Services
             return await _userManager.GetRolesAsync(user);
         }
 
+        public async Task<User> GetUserAsync(ClaimsPrincipal claims)
+        {
+            return await _userManager.GetUserAsync(claims);
+        }
 
         public async Task<Tuple<User, string[]>> GetUserAndRolesAsync(string userId)
         {
@@ -367,6 +380,69 @@ namespace BlogEngine.Service.Services
         {
             var result = await _roleManager.DeleteAsync(role);
             return Tuple.Create(result.Succeeded, result.Errors.Select(e => e.Description).ToArray());
+        }
+
+        public async Task<SignInResult> CheckPasswordSignInAsync(User user, string password, bool locked)
+        {
+            return await _signInManager.CheckPasswordSignInAsync(user, password, locked);
+        }
+
+        public async Task<bool> CanSignInAsync(User user)
+        {
+            return await _signInManager.CanSignInAsync(user);
+        }
+
+        public async Task<AuthenticationTicket> CreateTicketAsync(OpenIdConnectRequest request, User user)
+        {
+            var principal = await _signInManager.CreateUserPrincipalAsync(user);
+            var ticket = new AuthenticationTicket(principal, new AuthenticationProperties(), OpenIddictServerDefaults.AuthenticationScheme);
+            ticket.SetScopes(new[]
+            {
+                    OpenIdConnectConstants.Scopes.OpenId,
+                    OpenIdConnectConstants.Scopes.Email,
+                    OpenIdConnectConstants.Scopes.Phone,
+                    OpenIdConnectConstants.Scopes.Profile,
+                    OpenIdConnectConstants.Scopes.OfflineAccess,
+                    OpenIddictConstants.Scopes.Roles
+            }.Intersect(request.GetScopes()));
+            foreach (var claim in ticket.Principal.Claims)
+            {
+                if (claim.Type == _identityOptions.Value.ClaimsIdentity.SecurityStampClaimType)
+                    continue;
+                var destinations = new List<string> { OpenIdConnectConstants.Destinations.AccessToken };
+                if ((claim.Type == OpenIdConnectConstants.Claims.Subject && ticket.HasScope(OpenIdConnectConstants.Scopes.OpenId)) ||
+                    (claim.Type == OpenIdConnectConstants.Claims.Name && ticket.HasScope(OpenIdConnectConstants.Scopes.Profile)) ||
+                    (claim.Type == OpenIdConnectConstants.Claims.Role && ticket.HasScope(OpenIddictConstants.Claims.Roles)) ||
+                    (claim.Type == CustomClaimTypes.Permission && ticket.HasScope(OpenIddictConstants.Claims.Roles)))
+                {
+                    destinations.Add(OpenIdConnectConstants.Destinations.IdentityToken);
+                }
+                claim.SetDestinations(destinations);
+            }
+            var identity = principal.Identity as ClaimsIdentity;
+            if (ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
+            {
+                if (!string.IsNullOrWhiteSpace(user.JobTitle))
+                    identity.AddClaim(CustomClaimTypes.JobTitle, user.JobTitle, OpenIdConnectConstants.Destinations.IdentityToken);
+                if (!string.IsNullOrWhiteSpace(user.FullName))
+                    identity.AddClaim(CustomClaimTypes.FullName, user.FullName, OpenIdConnectConstants.Destinations.IdentityToken);
+                if (!string.IsNullOrWhiteSpace(user.Configuration))
+                    identity.AddClaim(CustomClaimTypes.Configuration, user.Configuration, OpenIdConnectConstants.Destinations.IdentityToken);
+            }
+
+            if (ticket.HasScope(OpenIdConnectConstants.Scopes.Email))
+            {
+                if (!string.IsNullOrWhiteSpace(user.Email))
+                    identity.AddClaim(CustomClaimTypes.Email, user.Email, OpenIdConnectConstants.Destinations.IdentityToken);
+            }
+
+            if (ticket.HasScope(OpenIdConnectConstants.Scopes.Phone))
+            {
+                if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
+                    identity.AddClaim(CustomClaimTypes.Phone, user.PhoneNumber, OpenIdConnectConstants.Destinations.IdentityToken);
+            }
+
+            return ticket;
         }
     }
 }

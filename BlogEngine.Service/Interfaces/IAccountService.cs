@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using AspNet.Security.OpenIdConnect.Primitives;
 using BlogEngine.Data.Entities;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
 
 namespace BlogEngine.Service.Interfaces
 {
@@ -24,6 +28,7 @@ namespace BlogEngine.Service.Interfaces
         Task<User> GetUserByIdAsync(string userId);
         Task<User> GetUserByUserNameAsync(string userName);
         Task<IList<string>> GetUserRolesAsync(User user);
+        Task<User> GetUserAsync(ClaimsPrincipal claims);
         Task<List<Tuple<User, string[]>>> GetUsersAndRolesAsync(int page, int pageSize);
         Task<Tuple<bool, string[]>> ResetPasswordAsync(User user, string newPassword);
         Task<bool> TestCanDeleteRoleAsync(string roleId);
@@ -32,5 +37,8 @@ namespace BlogEngine.Service.Interfaces
         Task<Tuple<bool, string[]>> UpdateRoleAsync(Role role, IEnumerable<string> claims);
         Task<Tuple<bool, string[]>> UpdateUserAsync(User user);
         Task<Tuple<bool, string[]>> UpdateUserAsync(User user, IEnumerable<string> roles);
+        Task<SignInResult> CheckPasswordSignInAsync(User user, string password, bool locked);
+        Task<bool> CanSignInAsync(User user);
+        Task<AuthenticationTicket> CreateTicketAsync(OpenIdConnectRequest request, User user);
     }
 }

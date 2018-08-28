@@ -22,15 +22,15 @@ namespace BlogEngine.Web.Controllers
         }
         // GET api/values
         [HttpGet]
-        public ActionResult<IList<BlogDTO>> Get()
+        public ActionResult<BlogDTO> Get()
         {
-            var tmp = _blogService.GetAll();
+            var tmp = _blogService.GetAll().FirstOrDefault();
             return new JsonResult(tmp);
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
+        public ActionResult<string> Get(Guid id)
         {
             return "value";
         }

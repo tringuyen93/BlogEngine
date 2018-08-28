@@ -35,6 +35,9 @@ namespace BlogEngine.Data
             builder.ApplyConfiguration(new UserLoginMapping());
             builder.ApplyConfiguration(new UserRoleMapping());
             builder.ApplyConfiguration(new UserTokenMapping());
+            builder.ApplyConfiguration(new TagMapping());
+            builder.ApplyConfiguration(new CategoryMapping());
+            builder.ApplyConfiguration(new CommentMapping());
         }
     }
 
