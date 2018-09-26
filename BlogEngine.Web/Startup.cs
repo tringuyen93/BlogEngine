@@ -31,6 +31,7 @@ namespace BlogEngine.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
             services.AddMvc(options =>
                 {
                     options.Filters.Add(typeof(ValidateModelAttribute));
@@ -44,9 +45,18 @@ namespace BlogEngine.Web
                 .AddCookie()
                 .AddOAuthValidation();
 
-            services.AddSwaggerGen(options =>
-                options.SwaggerDoc("v1", new Info { Title = "Conference Planner API", Version = "v1" })
-            );
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "BlogEngine API", Version = "v1" });
+                c.OperationFilter<AuthorizeCheckOperationFilter>();
+                c.AddSecurityDefinition("oauth2", new OAuth2Scheme
+                {
+                    Type = "oauth2",
+                    Flow = "password",
+                    TokenUrl = "/connect/token",
+                    Description = "Note: Leave client_id and client_secret blank"
+                });
+            });
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
@@ -108,6 +118,10 @@ namespace BlogEngine.Web
                 app.UseHsts();
             }
 
+            app.UseCors(builder => builder
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod());
             app.ResponseWrapperMiddleware();
             app.UseAuthentication();
             app.UseHttpsRedirection();

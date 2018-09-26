@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using BlogEngine.Data.Entities;
+using BlogEngine.Service.Dtos;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 
@@ -29,7 +30,7 @@ namespace BlogEngine.Service.Interfaces
         Task<User> GetUserByUserNameAsync(string userName);
         Task<IList<string>> GetUserRolesAsync(User user);
         Task<User> GetUserAsync(ClaimsPrincipal claims);
-        Task<List<Tuple<User, string[]>>> GetUsersAndRolesAsync(int page, int pageSize);
+        Task<IList<UserDTO>> GetUsersAndRolesAsync(int page, int pageSize);
         Task<Tuple<bool, string[]>> ResetPasswordAsync(User user, string newPassword);
         Task<bool> TestCanDeleteRoleAsync(string roleId);
         Task<bool> TestCanDeleteUserAsync(string userId);

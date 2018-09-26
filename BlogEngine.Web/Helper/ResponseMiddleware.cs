@@ -31,7 +31,7 @@ namespace BlogEngine.WebApi.Helper
 
         public async Task Invoke(HttpContext context)
         {
-            if (IsSwagger(context)) await _next(context);
+            if (IsSwagger(context) || IsAuthorization(context)) await _next(context);
             else
             {
                 var originalStream = context.Response.Body;
@@ -67,6 +67,10 @@ namespace BlogEngine.WebApi.Helper
         private bool IsSwagger(HttpContext context)
         {
             return context.Request.Path.StartsWithSegments("/swagger");
+        }
+        private bool IsAuthorization(HttpContext context)
+        {
+            return context.Request.Path.StartsWithSegments("/connect");
         }
 
         private static Task ExceptionAsync(HttpContext context, Exception exception)

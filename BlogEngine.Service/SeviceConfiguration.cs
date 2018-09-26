@@ -4,6 +4,7 @@ using BlogEngine.Data.Entities;
 using BlogEngine.Service.Dtos;
 using BlogEngine.Service.Interfaces;
 using BlogEngine.Service.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,6 +24,8 @@ namespace BlogEngine.Utility
         public Mapper()
         {
             CreateMap<Blog, BlogDTO>();
+            CreateMap<User, UserDTO>()
+                .ForMember(x => x.RoleIds, y => y.MapFrom(z => z.Roles));
         }
     }
 }

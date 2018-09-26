@@ -13,7 +13,7 @@ using OpenIddict.Validation;
 
 namespace BlogEngine.WebApi.Controllers
 {
-    //[Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
@@ -26,10 +26,13 @@ namespace BlogEngine.WebApi.Controllers
             _authorizationService = authorizationService;
             _mapper = mapper;
         }
-        [HttpGet]
-        public IActionResult Get()
+        [HttpGet("users")]
+        [Authorize(Policies.ManageAllUsersPolicy)]
+        public async Task<IActionResult> GetUser(int page, int pageSize)
         {
-            return new JsonResult(null);
+            var users = await _accountService.GetUsersAndRolesAsync(page, pageSize);
+            //var lstUser = _mapper.Map<UserViewModel>(users);
+            return Ok(users);
         }
 
         [HttpPost("roles")]
@@ -62,7 +65,7 @@ namespace BlogEngine.WebApi.Controllers
         }
 
         [HttpPost("users")]
-        //[Authorize(Policies.ManageAllUsersPolicy)]
+        [Authorize(Policies.ManageAllUsersPolicy)]
         [ProducesResponseType(201, Type = typeof(UserViewModel))]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]

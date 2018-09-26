@@ -5,8 +5,10 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
+using AutoMapper;
 using BlogEngine.Data;
 using BlogEngine.Data.Entities;
+using BlogEngine.Service.Dtos;
 using BlogEngine.Service.Interfaces;
 using BlogEngine.Utility;
 using Microsoft.AspNetCore.Authentication;
@@ -26,8 +28,9 @@ namespace BlogEngine.Service.Services
         private readonly RoleManager<Role> _roleManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IOptions<IdentityOptions> _identityOptions;
+        private readonly IMapper _mapper;
 
-        public AccountService(UserManager<User> user, RoleManager<Role> role, SignInManager<User> signInManager, IOptions<IdentityOptions> identityOptions, BlogEngineContext context, IHttpContextAccessor httpAccessor)
+        public AccountService(UserManager<User> user, RoleManager<Role> role, SignInManager<User> signInManager, IOptions<IdentityOptions> identityOptions, BlogEngineContext context, IHttpContextAccessor httpAccessor, IMapper mapper)
         {
             _context = context;
             _context.CurrentUserId = httpAccessor.HttpContext?.User.FindFirst(OpenIdConnectConstants.Claims.Subject)?.Value?.Trim();
@@ -35,6 +38,7 @@ namespace BlogEngine.Service.Services
             _roleManager = role;
             _signInManager = signInManager;
             _identityOptions = identityOptions;
+            _mapper = mapper;
         }
         public async Task<User> GetUserByIdAsync(string userId)
         {
@@ -82,7 +86,7 @@ namespace BlogEngine.Service.Services
         }
 
 
-        public async Task<List<Tuple<User, string[]>>> GetUsersAndRolesAsync(int page, int pageSize)
+        public async Task<IList<UserDTO>> GetUsersAndRolesAsync(int page, int pageSize)
         {
             IQueryable<User> usersQuery = _context.Users
                 .Include(u => u.Roles)
@@ -95,16 +99,19 @@ namespace BlogEngine.Service.Services
                 usersQuery = usersQuery.Take(pageSize);
 
             var users = await usersQuery.ToListAsync();
-
+            var userDtos = _mapper.Map<List<UserDTO>>(users).ToList();
             var userRoleIds = users.SelectMany(u => u.Roles.Select(r => r.RoleId)).ToList();
 
             var roles = await _context.Roles
                 .Where(r => userRoleIds.Contains(r.Id))
                 .ToArrayAsync();
 
-            return users.Select(u => Tuple.Create(u,
-                roles.Where(r => u.Roles.Select(ur => ur.RoleId).Contains(r.Id)).Select(r => r.Name).ToArray()))
-                .ToList();
+            foreach (var s in userDtos)
+            {
+                s.Rolses = roles.Where(r => s.RoleIds.Select(ur => ur.RoleId).Contains(r.Id)).Select(r => r.Name).ToArray();
+            }
+
+            return userDtos;
         }
 
 
