@@ -28,12 +28,15 @@ import {
   MatInputModule,
   MatRippleModule,
   MatTooltipModule,
+  MatCheckboxChange,
+  MatCheckboxModule,
 } from '@angular/material';
 import { ConfigurationService } from './services/configuration.service';
 import { LocalStoreManager } from './services/local-store-manager';
 import { EndpointFactorty } from './services/endpoint-factory.service';
 import { AuthService } from './services/auth.services';
 import { HttpClientModule } from '@angular/common/http';
+import { AuthGuard } from './services/auth-guard.service';
 @NgModule({
   imports: [
     BrowserAnimationsModule,
@@ -49,6 +52,7 @@ import { HttpClientModule } from '@angular/common/http';
     MatRippleModule,
     MatInputModule,
     MatTooltipModule,
+    MatCheckboxModule,
     HttpClientModule
   ],
   declarations: [
@@ -60,7 +64,9 @@ import { HttpClientModule } from '@angular/common/http';
     AuthService,
     EndpointFactorty,
     LocalStoreManager,
-    ConfigurationService],
+    ConfigurationService,
+    AuthGuard
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

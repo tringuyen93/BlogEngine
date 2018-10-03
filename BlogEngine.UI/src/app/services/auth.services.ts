@@ -14,18 +14,20 @@ import { JwtHelper } from "./jwt-helper";
 @Injectable()
 
 export class AuthService {
+    public loginRedirectUrl: string;
+    public logoutRedirectUrl: string;
     private previousIsLoggedInCheck = false;
     private _loginStatus = new Subject<boolean>();
     constructor(private router: Router, private configurations: ConfigurationService, private endpointFactory: EndpointFactorty, private localStorage: LocalStoreManager) {
         debugger;
         this.initializeLoginStatus();
     }
-    
+
     private initializeLoginStatus() {
         this.localStorage.getInitEvent().subscribe(() => {
-          this.reevaluateLoginStatus();
+            this.reevaluateLoginStatus();
         });
-      }
+    }
 
     login(userName: string, password: string, rememberMe?: boolean) {
         if (this.isLoggedIn)
@@ -34,7 +36,7 @@ export class AuthService {
         return this.endpointFactory.getLoginEndpoint<LoginResponse>(userName, password).pipe(
             map(response => this.processLoginResponse(response, rememberMe)));
     }
-    
+
     private processLoginResponse(response: LoginResponse, rememberMe: boolean) {
 
         let accessToken = response.access_token;

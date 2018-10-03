@@ -8,8 +8,6 @@ import { AuthService } from "../services/auth.services";
 import { EndpointFactorty } from "../services/endpoint-factory.service";
 import { LocalStoreManager } from "../services/local-store-manager";
 import { ConfigurationService } from "../services/configuration.service";
-import { HttpModule } from "@angular/http";
-import { HttpClientModule } from "@angular/common/http";
 
 @NgModule({
   imports: [
